@@ -1930,8 +1930,13 @@ void WebContents::SetZoomLevel(double level) {
   zoom_controller_->SetZoomLevel(level);
 }
 
-double WebContents::GetZoomLevel() const {
-  return zoom_controller_->GetZoomLevel();
+v8::Local<v8::Promise> WebContents::GetZoomLevel(v8::Isolate* isolate) const {
+  scoped_refptr<util::Promise> promise = new util::Promise(isolate);
+
+  double zoom_level = zoom_controller_->GetZoomLevel();
+
+  promise->Resolve(zoom_level);
+  return promise->GetHandle();
 }
 
 void WebContents::SetZoomFactor(double factor) {
@@ -1939,9 +1944,14 @@ void WebContents::SetZoomFactor(double factor) {
   SetZoomLevel(level);
 }
 
-double WebContents::GetZoomFactor() const {
-  auto level = GetZoomLevel();
-  return content::ZoomLevelToZoomFactor(level);
+v8::Local<v8::Promise> WebContents::GetZoomFactor(v8::Isolate* isolate) const {
+  scoped_refptr<util::Promise> promise = new util::Promise(isolate);
+
+  auto level = zoom_controller_->GetZoomLevel();
+  double zoom_factor = content::ZoomLevelToZoomFactor(level);
+
+  promise->Resolve(zoom_factor);
+  return promise->GetHandle();
 }
 
 void WebContents::OnSetTemporaryZoomLevel(content::RenderFrameHost* rfh,
@@ -1956,7 +1966,8 @@ void WebContents::OnSetTemporaryZoomLevel(content::RenderFrameHost* rfh,
 
 void WebContents::OnGetZoomLevel(content::RenderFrameHost* rfh,
                                  IPC::Message* reply_msg) {
-  AtomFrameHostMsg_GetZoomLevel::WriteReplyParams(reply_msg, GetZoomLevel());
+  double zoom_level = zoom_controller_->GetZoomLevel();
+  AtomFrameHostMsg_GetZoomLevel::WriteReplyParams(reply_msg, zoom_level);
   rfh->Send(reply_msg);
 }
 
@@ -2159,9 +2170,9 @@ void WebContents::BuildPrototype(v8::Isolate* isolate,
 #endif
       .SetMethod("invalidate", &WebContents::Invalidate)
       .SetMethod("setZoomLevel", &WebContents::SetZoomLevel)
-      .SetMethod("_getZoomLevel", &WebContents::GetZoomLevel)
+      .SetMethod("getZoomLevel", &WebContents::GetZoomLevel)
       .SetMethod("setZoomFactor", &WebContents::SetZoomFactor)
-      .SetMethod("_getZoomFactor", &WebContents::GetZoomFactor)
+      .SetMethod("getZoomFactor", &WebContents::GetZoomFactor)
       .SetMethod("getType", &WebContents::GetType)
       .SetMethod("_getPreloadPath", &WebContents::GetPreloadPath)
       .SetMethod("getWebPreferences", &WebContents::GetWebPreferences)

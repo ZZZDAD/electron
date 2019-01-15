@@ -10,8 +10,8 @@
     if (!finalNavigation && !view.canGoBack()) {
       view.setZoomLevel(2.0)
     }
-    view.getZoomLevel((zoomLevel) => {
-      view.getZoomFactor((zoomFactor) => {
+    view.getZoomLevel().then(zoomLevel => {
+      view.getZoomFactor().then(zoomFactor => {
         ipcRenderer.send('webview-zoom-level', zoomLevel, zoomFactor, view.canGoBack(), finalNavigation)
         if (!view.canGoBack() && !finalNavigation) {
           view.src = 'zoom://host2'

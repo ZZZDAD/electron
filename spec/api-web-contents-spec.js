@@ -586,10 +586,10 @@ describe('webContents module', () => {
     it('can set the correct zoom level', async () => {
       try {
         await w.loadURL('about:blank')
-        const zoomLevel = await new Promise(resolve => w.webContents.getZoomLevel(resolve))
+        const zoomLevel = await w.webContents.getZoomLevel()
         expect(zoomLevel).to.eql(0.0)
         w.webContents.setZoomLevel(0.5)
-        const newZoomLevel = await new Promise(resolve => w.webContents.getZoomLevel(resolve))
+        const newZoomLevel = await w.webContents.getZoomLevel()
         expect(newZoomLevel).to.eql(0.5)
       } finally {
         w.webContents.setZoomLevel(0)
@@ -626,9 +626,9 @@ describe('webContents module', () => {
         show: false
       })
       w2.webContents.on('did-finish-load', () => {
-        w.webContents.getZoomLevel((zoomLevel1) => {
+        w.webContents.getZoomLevel().then(zoomLevel1 => {
           assert.strictEqual(zoomLevel1, hostZoomMap.host3)
-          w2.webContents.getZoomLevel((zoomLevel2) => {
+          w2.webContents.getZoomLevel().then(zoomLevel2 => {
             assert.strictEqual(zoomLevel1, zoomLevel2)
             w2.setClosable(true)
             w2.close()
@@ -656,9 +656,9 @@ describe('webContents module', () => {
       }, (error) => {
         if (error) return done(error)
         w2.webContents.on('did-finish-load', () => {
-          w.webContents.getZoomLevel((zoomLevel1) => {
+          w.webContents.getZoomLevel().then(zoomLevel1 => {
             assert.strictEqual(zoomLevel1, hostZoomMap.host3)
-            w2.webContents.getZoomLevel((zoomLevel2) => {
+            w2.webContents.getZoomLevel().then(zoomLevel2 => {
               assert.strictEqual(zoomLevel2, 0)
               assert.notStrictEqual(zoomLevel1, zoomLevel2)
               protocol.unregisterProtocol(zoomScheme, (error) => {
@@ -689,7 +689,7 @@ describe('webContents module', () => {
         const content = `<iframe src=${url}></iframe>`
         w.webContents.on('did-frame-finish-load', (e, isMainFrame) => {
           if (!isMainFrame) {
-            w.webContents.getZoomLevel((zoomLevel) => {
+            w.webContents.getZoomLevel().then(zoomLevel => {
               assert.strictEqual(zoomLevel, 2.0)
               w.webContents.setZoomLevel(0)
               server.close()
@@ -710,9 +710,9 @@ describe('webContents module', () => {
         show: false
       })
       w2.webContents.on('did-finish-load', () => {
-        w.webContents.getZoomLevel((zoomLevel1) => {
+        w.webContents.getZoomLevel().then(zoomLevel1 => {
           assert.strictEqual(zoomLevel1, finalZoomLevel)
-          w2.webContents.getZoomLevel((zoomLevel2) => {
+          w2.webContents.getZoomLevel().then(zoomLevel2 => {
             assert.strictEqual(zoomLevel2, 0)
             assert.notStrictEqual(zoomLevel1, zoomLevel2)
             w2.setClosable(true)
@@ -739,7 +739,7 @@ describe('webContents module', () => {
         if (initialNavigation) {
           w.webContents.executeJavaScript(source, () => {})
         } else {
-          w.webContents.getZoomLevel((zoomLevel) => {
+          w.webContents.getZoomLevel().then(zoomLevel => {
             assert.strictEqual(zoomLevel, 0)
             done()
           })
