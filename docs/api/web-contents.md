@@ -972,8 +972,13 @@ zoom percent divided by 100, so 300% = 3.0.
 * `callback` Function
   * `zoomFactor` Number
 
-Sends a request to get current zoom factor, the `callback` will be called with
-`callback(zoomFactor)`.
+Sends a request to get current zoom factor, the `callback` will be called with `callback(zoomFactor)`.
+
+**[Deprecated Soon](promisification.md)**
+
+#### `contents.getZoomFactor()`
+
+Returns `Promise<Number>` - fulfilled with the current zoom factor.
 
 #### `contents.setZoomLevel(level)`
 
@@ -989,8 +994,13 @@ limits of 300% and 50% of original size, respectively. The formula for this is
 * `callback` Function
   * `zoomLevel` Number
 
-Sends a request to get current zoom level, the `callback` will be called with
-`callback(zoomLevel)`.
+Sends a request to get current zoom level, the `callback` will be called with `callback(zoomLevel)`.
+
+**[Deprecated Soon](promisification.md)**
+
+#### `contents.getZoomLevel()`
+
+Returns `Promise<Number>` - fulfilled with the current zoom level.
 
 #### `contents.setVisualZoomLevelLimits(minimumLevel, maximumLevel)`
 
