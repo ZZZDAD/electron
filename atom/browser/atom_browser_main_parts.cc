@@ -51,7 +51,6 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
-#include "url/url_util.h"
 
 #if defined(USE_AURA)
 #include "ui/display/display.h"
