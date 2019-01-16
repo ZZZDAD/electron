@@ -1932,7 +1932,6 @@ void WebContents::SetZoomLevel(double level) {
 
 v8::Local<v8::Promise> WebContents::GetZoomLevel(v8::Isolate* isolate) const {
   scoped_refptr<util::Promise> promise = new util::Promise(isolate);
-
   double zoom_level = zoom_controller_->GetZoomLevel();
 
   promise->Resolve(zoom_level);
@@ -1947,11 +1946,16 @@ void WebContents::SetZoomFactor(double factor) {
 v8::Local<v8::Promise> WebContents::GetZoomFactor(v8::Isolate* isolate) const {
   scoped_refptr<util::Promise> promise = new util::Promise(isolate);
 
-  auto level = zoom_controller_->GetZoomLevel();
+  double level = zoom_controller_->GetZoomLevel();
   double zoom_factor = content::ZoomLevelToZoomFactor(level);
 
   promise->Resolve(zoom_factor);
   return promise->GetHandle();
+}
+
+double WebContents::GetZoomFactorSync() const {
+  double level = zoom_controller_->GetZoomLevel();
+  return content::ZoomLevelToZoomFactor(level);
 }
 
 void WebContents::OnSetTemporaryZoomLevel(content::RenderFrameHost* rfh,
@@ -2173,6 +2177,7 @@ void WebContents::BuildPrototype(v8::Isolate* isolate,
       .SetMethod("getZoomLevel", &WebContents::GetZoomLevel)
       .SetMethod("setZoomFactor", &WebContents::SetZoomFactor)
       .SetMethod("getZoomFactor", &WebContents::GetZoomFactor)
+      .SetMethod("_getZoomFactor", &WebContents::GetZoomFactorSync)
       .SetMethod("getType", &WebContents::GetType)
       .SetMethod("_getPreloadPath", &WebContents::GetPreloadPath)
       .SetMethod("getWebPreferences", &WebContents::GetWebPreferences)

@@ -258,6 +258,7 @@ class WebContents : public mate::TrackableObject<WebContents>,
 
   // Methods for zoom handling.
   void SetZoomLevel(double level);
+  double GetZoomFactorSync() const;
   v8::Local<v8::Promise> GetZoomLevel(v8::Isolate* isolate) const;
   void SetZoomFactor(double factor);
   v8::Local<v8::Promise> GetZoomFactor(v8::Isolate* isolate) const;
