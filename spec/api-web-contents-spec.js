@@ -568,10 +568,9 @@ describe('webContents module', () => {
         const response = `<script>
                             const {ipcRenderer, remote} = require('electron')
                             ipcRenderer.send('set-zoom', window.location.hostname)
-                            ipcRenderer.on(window.location.hostname + '-zoom-set', () => {
-                              remote.getCurrentWebContents().getZoomLevel().then(zoomLevel => {
-                                ipcRenderer.send(window.location.hostname + '-zoom-level', zoomLevel)
-                              })
+                            ipcRenderer.on(window.location.hostname + '-zoom-set', async () => {
+                              const zoomLevel = await remote.getCurrentWebContents().getZoomLevel()
+                              ipcRenderer.send(window.location.hostname + '-zoom-level', zoomLevel)
                             })
                           </script>`
         callback({ data: response, mimeType: 'text/html' })
@@ -625,16 +624,16 @@ describe('webContents module', () => {
       const w2 = new BrowserWindow({
         show: false
       })
-      w2.webContents.on('did-finish-load', () => {
-        w.webContents.getZoomLevel().then(zoomLevel1 => {
-          assert.strictEqual(zoomLevel1, hostZoomMap.host3)
-          w2.webContents.getZoomLevel().then(zoomLevel2 => {
-            assert.strictEqual(zoomLevel1, zoomLevel2)
-            w2.setClosable(true)
-            w2.close()
-            done()
-          })
-        })
+      w2.webContents.on('did-finish-load', async () => {
+        const zoomLevel1 = await w.webContents.getZoomLevel()
+        assert.strictEqual(zoomLevel1, hostZoomMap.host3)
+
+        const zoomLevel2 = await w2.webContents.getZoomLevel()
+        assert.strictEqual(zoomLevel1, zoomLevel2)
+
+        w2.setClosable(true)
+        w2.close()
+        done()
       })
       w.webContents.on('did-finish-load', () => {
         w.webContents.setZoomLevel(hostZoomMap.host3)
@@ -655,19 +654,19 @@ describe('webContents module', () => {
         callback('hello')
       }, (error) => {
         if (error) return done(error)
-        w2.webContents.on('did-finish-load', () => {
-          w.webContents.getZoomLevel().then(zoomLevel1 => {
-            assert.strictEqual(zoomLevel1, hostZoomMap.host3)
-            w2.webContents.getZoomLevel().then(zoomLevel2 => {
-              assert.strictEqual(zoomLevel2, 0)
-              assert.notStrictEqual(zoomLevel1, zoomLevel2)
-              protocol.unregisterProtocol(zoomScheme, (error) => {
-                if (error) return done(error)
-                w2.setClosable(true)
-                w2.close()
-                done()
-              })
-            })
+        w2.webContents.on('did-finish-load', async () => {
+          const zoomLevel1 = await w.webContents.getZoomLevel()
+          assert.strictEqual(zoomLevel1, hostZoomMap.host3)
+
+          const zoomLevel2 = await w2.webContents.getZoomLevel()
+          assert.strictEqual(zoomLevel2, 0)
+          assert.notStrictEqual(zoomLevel1, zoomLevel2)
+
+          protocol.unregisterProtocol(zoomScheme, (error) => {
+            if (error) return done(error)
+            w2.setClosable(true)
+            w2.close()
+            done()
           })
         })
         w.webContents.on('did-finish-load', () => {
@@ -687,14 +686,14 @@ describe('webContents module', () => {
       server.listen(0, '127.0.0.1', () => {
         const url = 'http://127.0.0.1:' + server.address().port
         const content = `<iframe src=${url}></iframe>`
-        w.webContents.on('did-frame-finish-load', (e, isMainFrame) => {
+        w.webContents.on('did-frame-finish-load', async (e, isMainFrame) => {
           if (!isMainFrame) {
-            w.webContents.getZoomLevel().then(zoomLevel => {
-              assert.strictEqual(zoomLevel, 2.0)
-              w.webContents.setZoomLevel(0)
-              server.close()
-              done()
-            })
+            const zoomLevel = await w.webContents.getZoomLevel()
+
+            assert.strictEqual(zoomLevel, 2.0)
+            w.webContents.setZoomLevel(0)
+            server.close()
+            done()
           }
         })
         w.webContents.on('dom-ready', () => {
@@ -709,17 +708,17 @@ describe('webContents module', () => {
       const w2 = new BrowserWindow({
         show: false
       })
-      w2.webContents.on('did-finish-load', () => {
-        w.webContents.getZoomLevel().then(zoomLevel1 => {
-          assert.strictEqual(zoomLevel1, finalZoomLevel)
-          w2.webContents.getZoomLevel().then(zoomLevel2 => {
-            assert.strictEqual(zoomLevel2, 0)
-            assert.notStrictEqual(zoomLevel1, zoomLevel2)
-            w2.setClosable(true)
-            w2.close()
-            done()
-          })
-        })
+      w2.webContents.on('did-finish-load', async () => {
+        const zoomLevel1 = await w.webContents.getZoomLevel()
+        assert.strictEqual(zoomLevel1, finalZoomLevel)
+
+        const zoomLevel2 = await w2.webContents.getZoomLevel()
+        assert.strictEqual(zoomLevel2, 0)
+        assert.notStrictEqual(zoomLevel1, zoomLevel2)
+
+        w2.setClosable(true)
+        w2.close()
+        done()
       })
       ipcMain.once('temporary-zoom-set', (e, zoomLevel) => {
         w2.loadFile(path.join(fixtures, 'pages', 'c.html'))
@@ -735,14 +734,13 @@ describe('webContents module', () => {
         webFrame.setZoomLevel(0.6)
         ipcRenderer.send('zoom-level-set', webFrame.getZoomLevel())
       `
-      w.webContents.on('did-finish-load', () => {
+      w.webContents.on('did-finish-load', async () => {
         if (initialNavigation) {
           w.webContents.executeJavaScript(source, () => {})
         } else {
-          w.webContents.getZoomLevel().then(zoomLevel => {
-            assert.strictEqual(zoomLevel, 0)
-            done()
-          })
+          const zoomLevel = await w.webContents.getZoomLevel()
+          assert.strictEqual(zoomLevel, 0)
+          done()
         }
       })
       ipcMain.once('zoom-level-set', (e, zoomLevel) => {
