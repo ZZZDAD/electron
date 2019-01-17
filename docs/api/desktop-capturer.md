@@ -12,32 +12,30 @@ title is `Electron`:
 // In the renderer process.
 const { desktopCapturer } = require('electron')
 
-desktopCapturer.getSources({ types: ['window', 'screen'] }, async (error, sources) => {
-  if (error) throw error
-  for (const source of sources) {
-    if (source.name === 'Electron') {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            mandatory: {
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: source.id,
-              minWidth: 1280,
-              maxWidth: 1280,
-              minHeight: 720,
-              maxHeight: 720
-            }
+const sources = await desktopCapturer.getSources({ types: ['window', 'screen'] })
+for (const source of sources) {
+  if (source.name === 'Electron') {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          mandatory: {
+            chromeMediaSource: 'desktop',
+            chromeMediaSourceId: source.id,
+            minWidth: 1280,
+            maxWidth: 1280,
+            minHeight: 720,
+            maxHeight: 720
           }
-        })
-        handleStream(stream)
-      } catch (e) {
-        handleError(e)
-      }
-      return
+        }
+      })
+      handleStream(stream)
+    } catch (e) {
+      handleError(e)
     }
+    return
   }
-})
+}
 
 function handleStream (stream) {
   const video = document.querySelector('video')
@@ -97,5 +95,20 @@ and calls `callback(error, sources)` when finished.
 `sources` is an array of [`DesktopCapturerSource`](structures/desktop-capturer-source.md)
 objects, each `DesktopCapturerSource` represents a screen or an individual window that can be
 captured.
+
+[`navigator.mediaDevices.getUserMedia`]: https://developer.mozilla.org/en/docs/Web/API/MediaDevices/getUserMedia
+
+### `desktopCapturer.getSources(options)`
+
+* `options` Object
+  * `types` String[] - An array of Strings that lists the types of desktop sources
+    to be captured, available types are `screen` and `window`.
+  * `thumbnailSize` [Size](structures/size.md) (optional) - The size that the media source thumbnail
+    should be scaled to. Default is `150` x `150`.
+  * `fetchWindowIcons` Boolean (optional) - Set to true to enable fetching window icons. The default
+    value is false. When false the appIcon property of the sources return null. Same if a source has
+    the type screen.
+
+Returns `Promise<sources>` - Resolves with an array of [`DesktopCapturerSource`](structures/desktop-capturer-source.md) objects, each `DesktopCapturerSource` represents a screen or an individual window that can be captured.
 
 [`navigator.mediaDevices.getUserMedia`]: https://developer.mozilla.org/en/docs/Web/API/MediaDevices/getUserMedia
