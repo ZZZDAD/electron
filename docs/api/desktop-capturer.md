@@ -98,6 +98,8 @@ captured.
 
 [`navigator.mediaDevices.getUserMedia`]: https://developer.mozilla.org/en/docs/Web/API/MediaDevices/getUserMedia
 
+**[Deprecated Soon](promisification.md)**
+
 ### `desktopCapturer.getSources(options)`
 
 * `options` Object
